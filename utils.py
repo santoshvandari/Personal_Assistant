@@ -1,10 +1,9 @@
 import os
 from dotenv import load_dotenv
-import google.generativeai as genai
+from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain.chains import LLMChain
 from langchain.prompts import PromptTemplate
 from langchain.agents import initialize_agent, Tool, AgentType
-
 
 # Load environment variables
 load_dotenv()
@@ -14,13 +13,17 @@ _llm_instance = None
 def get_llm_instance():
     global _llm_instance
     if _llm_instance is None:
-        # geminiapikey= os.getenv("API_KEY")
-        api_key= os.getenv("API_KEY")
+        api_key = os.getenv("API_KEY")
         
         if not api_key:
             raise ValueError("API key not found. Please set the API_KEY environment variable.")
-        genai.configure(api_key=api_key)
-        _llm_instance = genai.GenerativeModel("gemini-pro")
+        
+        # Using ChatGoogleGenerativeAI instead of GoogleGenerativeAI
+        _llm_instance = ChatGoogleGenerativeAI(
+            model="gemini-pro",
+            google_api_key=api_key,
+            temperature=0.7
+        )
     return _llm_instance
 
 
@@ -82,7 +85,5 @@ def initialize_agent_executor():
             description="Extract action items from meeting notes."
         )
     ]
-   
     agent = initialize_agent(tools, llm, agent=AgentType.ZERO_SHOT_REACT_DESCRIPTION, verbose=True, return_intermediate_steps=True)
-   
     return agent
